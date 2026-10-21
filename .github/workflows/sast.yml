@@ -1,0 +1,46 @@
+name: SAST Analysis
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  semgrep:
+    name: Semgrep Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Semgrep
+        run: pip install semgrep
+
+      - name: Run Semgrep SAST
+        run: |
+          semgrep scan \
+            --config auto \
+            --exclude .next \
+            --exclude node_modules \
+            --exclude coverage \
+            --exclude dist \
+            --exclude semgrep-results-clean.txt \
+            --json \
+            --output semgrep-results.json \
+            --error .
+
+      - name: Upload Semgrep report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-sast-report
+          path: semgrep-results.json
+          if-no-files-found: ignore
