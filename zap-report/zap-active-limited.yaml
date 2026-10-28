@@ -1,0 +1,35 @@
+env:
+  contexts:
+    - name: "UniLink"
+      urls:
+        - "http://host.docker.internal:3000"
+      includePaths:
+        - "http://host.docker.internal:3000/.*"
+
+jobs:
+  - type: spider
+    parameters:
+      context: "UniLink"
+      url: "http://host.docker.internal:3000"
+      maxDuration: 2
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 2
+
+  - type: activeScan
+    parameters:
+      context: "UniLink"
+      url: "http://host.docker.internal:3000"
+      maxScanDurationInMins: 3
+      maxRuleDurationInMins: 1
+      threadPerHost: 1
+      delayInMs: 100
+
+  - type: report
+    parameters:
+      template: "traditional-html"
+      reportDir: "/zap/wrk"
+      reportFile: "zap-active-limited.html"
+      reportTitle: "UniLink - Active Security Scan"
+      reportDescription: "Limited active scan for the local development application"
